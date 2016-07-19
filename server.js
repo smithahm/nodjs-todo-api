@@ -1,20 +1,12 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
 
-var todos = [{
- id: 1,
- description: 'cook lunch',
- status: false
-},{
- id: 2,
- description: 'go to gym',
- status: false
-},{
- id: 3, 
- description: 'sleep well',
- status: true
-}];
+var todos = [];
+var todonextId = 1;
+
+app.use(bodyParser.json());
 
 app.get('/', function(req, res){
   res.send('ToDo API root');
@@ -25,6 +17,16 @@ app.get('/', function(req, res){
 app.get('/todos', function(req, res){
   res.json(todos);
 });
+
+app.post('/todos', function(req,res){
+	var body = req.body;
+    var id =  todonextId++;
+
+    body.id = id;
+    todos.push(body);
+    res.json(body);
+
+})
 
 app.get('/todos/:id', function(req,res){
 	//params.id will be string so convert to Integer. Second argument is base10
