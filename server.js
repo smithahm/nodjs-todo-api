@@ -21,6 +21,7 @@ app.get('/todos', function(req, res){
 
 app.post('/todos', function(req,res){
 
+// this removes unwanted fields and keeps only description and completed tags
 	var body = _.pick(req.body, 'description', 'completed');
 	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
 		return res.status(400).send();
@@ -59,6 +60,36 @@ app.delete('/todos/:id', function(req,res){
   }
 
 
+});
+
+//PUT to update todo item
+app.put('/todos/:id', function(req, res){
+   var todoid = parseInt(req.params.id, 10);
+   var body = _.pick(req.body, 'description', 'completed');
+   //this stores the value that needs to be updated.
+   var validAttrs = {};
+
+   if(body.hasOwnProperty('completed') && _.isBoolean('completed')){
+     validAttrs.completed = body.completed;
+   }else if(body.hasOwnProperty('completed')){
+       return res.status(400).send();
+   }
+
+   if(body.hasOwnProperty('description') && _.isString('description') && body.description.trim().length !== 0){
+     validAttrs.description = body.description;
+   }else if(body.hasOwnProperty('description')){
+      return res.status(400).send();
+   }
+
+ var matchFound = _.findWhere(todos, {id: todoid});
+
+  if(!matchFound){
+   return res.status(404).send();
+  }else{
+     _.extend(matchFound, validAttrs);
+  }    
+
+res.json(todos);
 });
 
 app.listen(PORT, function(){
