@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var _ = require('underscore');
 var app = express();
 var PORT = process.env.PORT || 3000;
+var db = require('./db.js');
 
 var todos = [];
 var todonextId = 1;
@@ -39,14 +40,23 @@ app.post('/todos', function(req,res){
 
 // this removes unwanted fields and keeps only description and completed tags
 	var body = _.pick(req.body, 'description', 'completed');
-	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
+
+   db.todo.create(body).then(function(todo){
+         return res.status(200).json(todo.toJSON());
+  }, function(e){
+        return res.status(400).json(e);
+  });
+
+
+
+/*	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
 		return res.status(400).send();
 	}
 	body.description = body.description.trim();
     var id =  todonextId++;
     body.id = id;
     todos.push(body);
-    res.json(body);
+    res.json(body); */
 
 })
 
@@ -108,6 +118,10 @@ app.put('/todos/:id', function(req, res){
    res.json(todos);
 });
 
-app.listen(PORT, function(){
+
+
+db.sequelize.sync({force:true}).then(function(){
+	 app.listen(PORT, function(){
 	console.log('express lisitening on ' + PORT + '!');
+});
 });
