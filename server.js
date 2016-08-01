@@ -18,22 +18,32 @@ app.get('/', function(req, res){
 //GET /todos/id
 //GET /todos/?completed=true
 app.get('/todos', function(req, res){
-  var queryParams = req.query;
-  var filteredTodos = todos;
+  var query = req.query;
+  var where = {};
 
-  if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
-  	filteredTodos = _.where(filteredTodos, {completed: true});
-  }else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
-  	filteredTodos = _.where(filteredTodos, {completed: false});
-  }
+  // var filteredTodos = todos;
+
+  if(query.hasOwnProperty('completed') && query.completed === 'true'){
+  //	filteredTodos = _.where(filteredTodos, {completed: true});
+     where.completed = true;
+  }else if(query.hasOwnProperty('completed') && query.completed === 'false'){
+    //  filteredTodos = _.where(filteredTodos, {completed: false});
+     where.completed = false;
+  } 
  
-  if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0){
-  	filteredTodos  = _.filter(filteredTodos, function(todo){
+  if(query.hasOwnProperty('q') && query.q.length > 0){
+ /* 	filteredTodos  = _.filter(filteredTodos, function(todo){
        return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;     
-  	});
-  }
-
-  res.json(filteredTodos);
+  	});*/
+     where.description = {
+      $like : '%' + query.q.toLowerCase() + '%'
+  };
+}
+  db.todo.findAll({where: where}).then(function (todos){
+     res.json(todos);
+  }, function(e){
+    res.status(500).send();
+  })
 });
 
 app.post('/todos', function(req,res){
@@ -63,14 +73,22 @@ app.post('/todos', function(req,res){
 app.get('/todos/:id', function(req,res){
 	//params.id will be string so convert to Integer. Second argument is base10
 	var todoid = parseInt(req.params.id, 10);
-	var matchFound = _.findWhere(todos, {id: todoid});
-
+   db.todo.findById(todoid).then(function (todo){
+  if(!!todo){
+    res.json(todo.toJSON());
+  }else{
+    res.status(404).send();
+  }
+ }, function(e){
+     res.status(500).send();
+ });
+/*	var matchFound = _.findWhere(todos, {id: todoid});
   if(!matchFound){
    res.status(404).send();
   }else{
   	res.json(matchFound);
   }
- 
+ */ 
 });
 
 //DELETE
@@ -120,7 +138,7 @@ app.put('/todos/:id', function(req, res){
 
 
 
-db.sequelize.sync({force:true}).then(function(){
+db.sequelize.sync().then(function(){
 	 app.listen(PORT, function(){
 	console.log('express lisitening on ' + PORT + '!');
 });
