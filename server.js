@@ -94,14 +94,30 @@ app.get('/todos/:id', function(req,res){
 //DELETE
 app.delete('/todos/:id', function(req,res){
     var todoid = parseInt(req.params.id, 10);
-    var matched = _.findWhere(todos, {id: todoid});
+  //  var matched = _.findWhere(todos, {id: todoid});
 
-   if(!matched){
+    db.todo.destroy({
+      where: {
+         id: todoid
+      }
+    }).then(function(rowsdeleted){
+        if(rowsdeleted === 0){
+          res.status(400).json({
+            error: 'no todo with id'
+          })
+        }else{
+          res.status(204).send();
+        }
+    }, function(){
+      res.status(500).send();
+    })
+
+ /*  if(!matched){
    res.status(404).json({"error": "no todo found with that id " + todoid});
   }else{
   	todos = _.without(todos, matched);
   	res.json(todos);
-  }
+  }*/
 
 
 });
@@ -138,7 +154,7 @@ app.put('/todos/:id', function(req, res){
 
 
 
-db.sequelize.sync().then(function(){
+db.sequelize.sync({force: true}).then(function(){
 	 app.listen(PORT, function(){
 	console.log('express lisitening on ' + PORT + '!');
 });
