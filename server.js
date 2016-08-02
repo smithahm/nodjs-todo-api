@@ -127,29 +127,38 @@ app.put('/todos/:id', function(req, res){
    var todoid = parseInt(req.params.id, 10);
    var body = _.pick(req.body, 'description', 'completed');
    //this stores the value that needs to be updated.
-   var validAttrs = {};
+   var attrs = {};
 
-   if(body.hasOwnProperty('completed') && _.isBoolean('completed')){
-     validAttrs.completed = body.completed;
-   }else if(body.hasOwnProperty('completed')){
-       return res.status(400).send();
+   if(body.hasOwnProperty('completed')){
+     attrs.completed = body.completed;
    }
 
-   if(body.hasOwnProperty('description') && _.isString('description') && body.description.trim().length !== 0){
-     validAttrs.description = body.description;
-   }else if(body.hasOwnProperty('description')){
-      return res.status(400).send();
+   if(body.hasOwnProperty('description')){
+     attrs.description = body.description;
    }
 
- var matchFound = _.findWhere(todos, {id: todoid});
+ /*var matchFound = _.findWhere(todos, {id: todoid});
 
   if(!matchFound){
    return res.status(404).send();
   }else{
      _.extend(matchFound, validAttrs);
-  }    
+  } */    
+  // res.json(todos);
 
-   res.json(todos);
+  db.todo.findById(todoid).then(function(todo){
+       if(todo){
+           todo.update(attrs).then(function(todo){
+             res.json(todo.toJSON());
+        }, function(e){
+             res.status(400).json(e);
+  });
+       }else{
+        res.status(404).send();
+       }
+  }, function(){
+    res.status(500).send();
+  })
 });
 
 
