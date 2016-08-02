@@ -14,8 +14,10 @@ if(env === 'production'){
 }
 
 var db = {};
-//import is a function lets you load sequlize modules from separate files.
+//import is a function lets you load sequelize modules from separate files.
 db.todo = sequelize.import(__dirname + '/models/todo.js');
+db.user = sequelize.import(__dirname + '/models/user.js');
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 

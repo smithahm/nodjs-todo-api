@@ -152,7 +152,7 @@ app.put('/todos/:id', function(req, res){
              res.json(todo.toJSON());
         }, function(e){
              res.status(400).json(e);
-  });
+       });
        }else{
         res.status(404).send();
        }
@@ -162,6 +162,17 @@ app.put('/todos/:id', function(req, res){
 });
 
 
+app.post('/users', function(req,res){
+
+// this removes unwanted fields and keeps only description and completed tags
+  var body = _.pick(req.body, 'email', 'password');
+
+   db.user.create(body).then(function(todo){
+         return res.status(200).json(todo.toJSON());
+  }, function(e){
+        return res.status(400).json(e);
+  });
+});
 
 db.sequelize.sync({force: true}).then(function(){
 	 app.listen(PORT, function(){
