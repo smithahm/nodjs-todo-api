@@ -4,6 +4,7 @@ var _ = require('underscore');
 var app = express();
 var PORT = process.env.PORT || 3000;
 var db = require('./db.js');
+var bcrypt = require('bcryptjs');
 
 var todos = [];
 var todonextId = 1;
@@ -172,6 +173,23 @@ app.post('/users', function(req,res){
   }, function(e){
         return res.status(400).json(e);
   });
+});
+
+
+
+//POST /users/login
+app.post('/users/login', function(req, res){
+ var body = _.pick(req.body, 'email', 'password');
+
+ db.user.authenticate(body).then(function (user){
+    res.json(user.toPublicJSON());
+ }, function(e){
+   res.send(401).json(e);
+ });
+
+/* 
+
+ res.json(body); */
 });
 
 db.sequelize.sync({force: true}).then(function(){
